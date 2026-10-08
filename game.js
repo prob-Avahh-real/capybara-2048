@@ -175,8 +175,10 @@ class Game2048 {
         
         tileElement.innerHTML = `
             <div class="tile-inner">
-                <span class="tile-emoji">${emoji}</span>
-                <span class="tile-number">${tile.value}</span>
+                <div class="tile-3d">
+                    <span class="tile-capybara">${emoji}</span>
+                    <span class="tile-number">${tile.value}</span>
+                </div>
             </div>
         `;
         
@@ -284,9 +286,13 @@ class Game2048 {
                         this.score += merged.value;
                         moved = true;
                         
+                        // Play sound effect for merge
+                        this.playMergeSound(merged.value);
+                        
                         if (merged.value === 2048 && !this.won && !this.keepPlaying) {
                             this.won = true;
                             setTimeout(() => this.showWin(), 300);
+                            this.playWinSound();
                         }
                     } else {
                         // Move to farthest position
@@ -414,6 +420,85 @@ class Game2048 {
     
     hideWin() {
         this.winScreen.classList.remove('active');
+    }
+    
+    playMergeSound(value) {
+        try {
+            const audioContext = new (window.AudioContext || window.webkitAudioContext)();
+            
+            // Calculate pitch based on tile value (higher value = higher pitch)
+            const baseFreq = 200;
+            const pitchMultiplier = Math.log2(value / 2) * 0.5 + 1;
+            const frequency = baseFreq * pitchMultiplier;
+            
+            // Create multiple oscillators for richer sound
+            const oscillators = [];
+            const gainNodes = [];
+            
+            for (let i = 0; i < 3; i++) {
+                const oscillator = audioContext.createOscillator();
+                const gainNode = audioContext.createGain();
+                
+                oscillator.connect(gainNode);
+                gainNode.connect(audioContext.destination);
+                
+                // Different waveforms for richer sound
+                oscillator.type = i === 0 ? 'sine' : i === 1 ? 'triangle' : 'square';
+                oscillator.frequency.setValueAtTime(frequency * (1 + i * 0.01), audioContext.currentTime);
+                
+                // Louder volume
+                gainNode.gain.setValueAtTime(0.4, audioContext.currentTime);
+                gainNode.gain.exponentialRampToValueAtTime(0.01, audioContext.currentTime + 0.3);
+                
+                oscillator.start(audioContext.currentTime);
+                oscillator.stop(audioContext.currentTime + 0.3);
+                
+                oscillators.push(oscillator);
+                gainNodes.push(gainNode);
+            }
+        } catch (e) {
+            console.log('Audio not available');
+        }
+    }
+    
+    playWinSound() {
+        try {
+            const audioContext = new (window.AudioContext || window.webkitAudioContext)();
+            
+            // Play a victory fanfare
+            const melody = [
+                { freq: 523.25, duration: 0.15 },  // C5
+                { freq: 659.25, duration: 0.15 },  // E5
+                { freq: 783.99, duration: 0.15 },  // G5
+                { freq: 1046.50, duration: 0.3 },  // C6
+                { freq: 783.99, duration: 0.15 },  // G5
+                { freq: 1046.50, duration: 0.5 }   // C6
+            ];
+            
+            let startTime = audioContext.currentTime;
+            
+            melody.forEach((note, index) => {
+                const oscillator = audioContext.createOscillator();
+                const gainNode = audioContext.createGain();
+                
+                oscillator.connect(gainNode);
+                gainNode.connect(audioContext.destination);
+                
+                oscillator.type = 'sine';
+                oscillator.frequency.setValueAtTime(note.freq, startTime);
+                
+                // Louder volume for win sound
+                gainNode.gain.setValueAtTime(0.5, startTime);
+                gainNode.gain.exponentialRampToValueAtTime(0.01, startTime + note.duration);
+                
+                oscillator.start(startTime);
+                oscillator.stop(startTime + note.duration);
+                
+                startTime += note.duration;
+            });
+        } catch (e) {
+            console.log('Audio not available');
+        }
     }
 }
 

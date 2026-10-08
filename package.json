@@ -1,0 +1,19 @@
+{
+  "name": "capybara-2048",
+  "private": true,
+  "version": "1.0.0",
+  "type": "module",
+  "scripts": {
+    "build": "echo 'No build step needed for vanilla JS'",
+    "sync:android": "npx cap sync android",
+    "apk:debug": "JAVA_HOME=/opt/homebrew/Cellar/openjdk@17/17.0.20 npm run sync:android && JAVA_HOME=/opt/homebrew/Cellar/openjdk@17/17.0.20 ./android/gradlew -p android assembleDebug",
+    "test": "node --test test/*.test.js"
+  },
+  "dependencies": {
+    "@capacitor/core": "^6.2.0",
+    "@capacitor/android": "^6.2.0"
+  },
+  "devDependencies": {
+    "@capacitor/cli": "^6.2.0"
+  }
+}

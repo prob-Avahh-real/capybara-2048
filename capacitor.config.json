@@ -1,0 +1,11 @@
+{
+  "appId": "com.skat.capybara2048",
+  "appName": "Capybara 2048",
+  "webDir": "www",
+  "server": {
+    "androidScheme": "https"
+  },
+  "android": {
+    "allowMixedContent": true
+  }
+}
